@@ -66,6 +66,29 @@ app.post("/add-image", async (req, res) => {
   }
 });
 
+app.post("/add-avatar", async (req, res) => {
+  const { avatar } = req.body;
+
+  if (!avatar) {
+    return res.status(400).json({ error: "Image link required" });
+  }
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO avatar (avatar) VALUES ($1) RETURNING *",
+      [avatar]
+    );
+
+    res.json({
+      success: true,
+      data: result.rows[0]
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 /* =========================
    FETCH ALL IMAGES
    ========================= */
@@ -80,6 +103,19 @@ app.get("/themes", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+app.get("/avatar", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, avatar FROM avatar ORDER BY id DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 /* =========================
    SERVER START
